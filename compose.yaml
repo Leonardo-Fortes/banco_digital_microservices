@@ -1,0 +1,66 @@
+name: banco-digital
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Developer
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?defina MSSQL_SA_PASSWORD no .env}
+      MSSQL_MEMORY_LIMIT_MB: 2048
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    healthcheck:
+      # $$ escapa o $ do compose: a variável é expandida dentro do container.
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -b -Q 'SELECT 1' -o /dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  # Roda uma vez: cria um database e um login por serviço, depois termina.
+  sqlserver-init:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    volumes:
+      - ./infra/sqlserver:/scripts:ro
+    entrypoint:
+      - /opt/mssql-tools18/bin/sqlcmd
+      - -S
+      - sqlserver
+      - -U
+      - sa
+      - -P
+      - ${MSSQL_SA_PASSWORD}
+      - -C
+      - -b
+      - -i
+      - /scripts/init.sql
+      - -v
+      - TransferenciasPwd=${TRANSFERENCIAS_DB_PASSWORD:?}
+      - LimitesPwd=${LIMITES_DB_PASSWORD:?}
+      - ContasPwd=${CONTAS_DB_PASSWORD:?}
+      - NotificacoesPwd=${NOTIFICACOES_DB_PASSWORD:?}
+    restart: "no"
+
+  localstack:
+    # 4.14.0 é a última versão community que sobe sem auth token.
+    # A partir da 2026.03 a imagem exige LOCALSTACK_AUTH_TOKEN (plano Hobby gratuito).
+    image: localstack/localstack:4.14.0
+    environment:
+      SERVICES: sns,sqs
+      AWS_DEFAULT_REGION: us-east-1
+    ports:
+      - "4566:4566"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:4566/_localstack/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  sqlserver-data:
