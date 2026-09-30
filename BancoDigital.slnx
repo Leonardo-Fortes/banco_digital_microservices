@@ -2,9 +2,14 @@
   <Folder Name="/src/" />
   <Folder Name="/src/Services/" />
   <Folder Name="/src/Services/Limites/">
-    <Project Path="src/Services/Limites/Limites.api/Limites.api.csproj" />
+    <Project Path="src/Services/Limites/Limites.Api/Limites.Api.csproj" />
     <Project Path="src/Services/Limites/Limites.Application/Limites.Application.csproj" />
     <Project Path="src/Services/Limites/Limites.Domain/Limites.Domain.csproj" />
     <Project Path="src/Services/Limites/Limites.Infrastructure/Limites.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/" />
+  <Folder Name="/tests/Services/" />
+  <Folder Name="/tests/Services/Limites/">
+    <Project Path="tests/Services/Limites/Limites.Domain.Tests/Limites.Domain.Tests.csproj" />
   </Folder>
 </Solution>
