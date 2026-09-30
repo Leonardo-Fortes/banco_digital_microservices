@@ -1,0 +1,26 @@
+{
+  "name": "banco-digital",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "features": {
+    "ghcr.io/devcontainers/features/dotnet:2": { "version": "10.0" },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/aws-cli:1": {}
+  },
+  // SQL Server pede ~2 GB; a máquina de 2 cores do Codespaces tem 8 GB.
+  "hostRequirements": { "memory": "8gb" },
+  "forwardPorts": [1433, 4566],
+  // Credenciais falsas: o LocalStack aceita qualquer valor.
+  // AWS_ENDPOINT_URL faz a AWS CLI e os SDKs apontarem para o LocalStack sem mudar código.
+  "containerEnv": {
+    "AWS_ACCESS_KEY_ID": "test",
+    "AWS_SECRET_ACCESS_KEY": "test",
+    "AWS_DEFAULT_REGION": "us-east-1",
+    "AWS_ENDPOINT_URL": "http://localhost:4566"
+  },
+  "postCreateCommand": "cp -n .env.example .env; dotnet restore BancoDigital.slnx",
+  "customizations": {
+    "vscode": {
+      "extensions": ["ms-dotnettools.csdevkit", "ms-mssql.mssql", "ms-azuretools.vscode-docker"]
+    }
+  }
+}
